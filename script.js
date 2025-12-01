@@ -38,21 +38,41 @@ function calculateTotal() {
 
 
 // ---------------------------------------------------------
+// Check if item is in cart
+// ---------------------------------------------------------
+function isInCart(id) {
+    return cart.some(item => item.id === id);
+}
+
+
+// ---------------------------------------------------------
 // Render Service List
 // ---------------------------------------------------------
 function renderServiceList() {
-    serviceItemsContainer.innerHTML = services.map(service => `
-        <div class="service-item">
-            <div class="service-details">
-                <p>${service.name} <span>₹ ${service.price.toFixed(2)}</span></p>
+    serviceItemsContainer.innerHTML = services.map(service => {
+        const inCart = isInCart(service.id);
+        return `
+            <div class="service-item">
+                <div class="service-details">
+                    <p>${service.name} <span>₹ ${service.price.toFixed(2)}</span></p>
+                </div>
+                <button class="add-item-btn ${inCart ? 'hidden' : ''}" data-id="${service.id}">Add Items</button>
+                <button class="remove-item-btn ${inCart ? '' : 'hidden'}" data-id="${service.id}">Remove Item</button>
             </div>
-            <button class="add-item-btn" data-id="${service.id}">Add Items</button>
-        </div>
-    `).join("");
+        `;
+    }).join("");
 
+    // Add event listeners for "Add Items" buttons
     document.querySelectorAll(".add-item-btn").forEach(btn => {
         btn.addEventListener("click", e => {
             addItemToCart(parseInt(e.target.dataset.id));
+        });
+    });
+
+    // Add event listeners for "Remove Item" buttons
+    document.querySelectorAll(".remove-item-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+            removeItemFromCart(parseInt(e.target.dataset.id));
         });
     });
 }
@@ -72,15 +92,8 @@ function renderCart() {
         <div class="cart-item">
             <span>${item.name} (x${item.quantity})</span>
             <span>₹ ${(item.price * item.quantity).toFixed(2)}</span>
-            <button class="remove-now-btn" data-id="${item.id}">Remove Now</button>
         </div>
     `).join("");
-
-    document.querySelectorAll(".remove-now-btn").forEach(btn => {
-        btn.addEventListener("click", e => {
-            removeItemFromCart(parseInt(e.target.dataset.id));
-        });
-    });
 
     calculateTotal();
 }
@@ -100,6 +113,7 @@ function addItemToCart(id) {
     }
 
     renderCart();
+    renderServiceList(); // Re-render to toggle buttons
 }
 
 
@@ -110,14 +124,11 @@ function removeItemFromCart(id) {
     const index = cart.findIndex(item => item.id === id);
 
     if (index !== -1) {
-        if (cart[index].quantity > 1) {
-            cart[index].quantity--;
-        } else {
-            cart.splice(index, 1);
-        }
+        cart.splice(index, 1); // Remove item completely from cart
     }
 
     renderCart();
+    renderServiceList(); // Re-render to toggle buttons
 }
 
 
@@ -160,6 +171,7 @@ bookingForm.addEventListener("submit", function (e) {
             bookingForm.reset();
             cart = [];
             renderCart();
+            renderServiceList(); // Reset service list buttons
 
             setTimeout(() => {
                 confirmationMessage.classList.add("hidden");
