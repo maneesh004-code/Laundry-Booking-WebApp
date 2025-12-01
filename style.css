@@ -614,3 +614,63 @@ section {
         flex-direction: column;
     }
 }
+
+
+
+
+/* Add these styles to your existing style.css file */
+
+/* Hide elements with hidden class */
+.hidden {
+    display: none !important;
+}
+
+/* Style for Remove Item button */
+.remove-item-btn {
+    background-color: #ef4444;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.remove-item-btn:hover {
+    background-color: #dc2626;
+}
+
+/* Ensure service-item has proper layout for button toggle */
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.service-details {
+    flex: 1;
+}
+
+/* Existing Add Item button style (if not already present) */
+.add-item-btn {
+    background-color: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.add-item-btn:hover {
+    background-color: #2563eb;
+}
