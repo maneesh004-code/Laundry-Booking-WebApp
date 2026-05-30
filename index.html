@@ -3,22 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laundry Services Web App</title>
+    <title>CleanWave - Laundry Services</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function() {
-            emailjs.init("IuFQItToLxei5sCsw");
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-        })();
-    </script>
-    
+    <!-- Navbar -->
     <nav class="navbar">
-        <div class="logo">Logo</div>
+        <div class="logo">CleanWave</div>
         <ul class="nav-links">
             <li><a href="#home">Home</a></li>
             <li><a href="#booking-section">Services</a></li>
@@ -30,6 +25,7 @@
         </div>
     </nav>
 
+    <!-- Hero -->
     <header id="home" class="hero-section">
         <div class="hero-content">
             <h1>Revitalize Your Clothes with Expert <span class="highlight">Laundry Services!</span></h1>
@@ -38,10 +34,11 @@
         </div>
         <div class="hero-image">
             <img src="https://ruangsop.com/wp-content/uploads/2025/04/interior-design-Washing-machine-washing-gel-and-laundry-basket-on-white-background-created-generative-ai_-Stock-%EC%9D%BC%EB%9F%AC%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%9D%B4%EC%85%98.jpeg"
-             alt="Laundry Service">
+                 alt="Washing machine and laundry basket">
         </div>
     </header>
-    
+
+    <!-- Achievements -->
     <section class="service-overview">
         <div class="overview-wrapper">
             <div class="overview-heading">
@@ -64,27 +61,28 @@
         </div>
     </section>
 
+    <!-- Booking Section -->
     <section id="booking-section" class="booking-services">
         <h2>Book Our Services</h2>
         <div class="booking-container">
-            
+
+            <!-- Left: Services List -->
             <div class="left-div" id="services-list">
                 <h3>Our Services</h3>
                 <div id="service-items-container"></div>
-
                 <p class="add-to-cart-info">
                     <i class="fa fa-info-circle"></i> Click "Add Items" to add services to your cart.
                 </p>
             </div>
 
+            <!-- Right: Cart + Form -->
             <div class="right-div">
-                
+
                 <div class="cart-section">
                     <h3>Added Items</h3>
                     <div id="added-items-list" class="added-items-list">
                         <p class="no-items">No Items Added</p>
                     </div>
-                    
                     <div class="total-amount">
                         <p>Total Amount</p>
                         <span id="total-amount-display">₹ 0.00</span>
@@ -93,21 +91,44 @@
 
                 <div class="booking-form-section">
                     <h3>Book Now</h3>
-                    <form id="booking-form">
-                        <input type="text" id="fullName" name="fullName" placeholder="Full Name" required>
-                        <input type="email" id="email" name="email" placeholder="Email" required>
-                        <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
-                        
-                        <button type="submit" class="book-now-btn">Book Now</button>
+                    <form id="booking-form" novalidate>
+
+                        <div class="field-wrap">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName"
+                                placeholder="Enter your full name"
+                                minlength="2" required>
+                            <span class="err-msg" id="fullName-err"></span>
+                        </div>
+
+                        <div class="field-wrap">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email"
+                                placeholder="Enter your email" required>
+                            <span class="err-msg" id="email-err"></span>
+                        </div>
+
+                        <div class="field-wrap">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone"
+                                placeholder="10-digit phone number"
+                                maxlength="10" pattern="[0-9]{10}" required>
+                            <span class="err-msg" id="phone-err"></span>
+                        </div>
+
+                        <button type="submit" id="bookBtn" class="book-now-btn">Book Now</button>
                     </form>
-                    <p id="confirmation-message" class="hidden">
-                        Thank you For Booking the Service! We will get back to you soon.
+
+                    <p id="confirmation-message" class="hidden success-msg">
+                        ✅ Thank you for booking! We will get back to you soon.
                     </p>
                 </div>
+
             </div>
         </div>
     </section>
-    
+
+    <!-- Why Choose Us -->
     <section id="why-choose-us" class="quality-description">
         <h2>Why Choose Us?</h2>
         <div class="qualities-container">
@@ -134,24 +155,39 @@
         </div>
     </section>
 
+    <!-- Newsletter -->
     <section class="newsletter-section">
         <div class="newsletter-content">
             <h2>Subscribe to our newsletter.</h2>
-            <form class="newsletter-form">
-                <input type="text" placeholder="Full Name" required>
-                <input type="email" placeholder="Email" required>
+            <form id="newsletter-form" novalidate>
+
+                <div class="field-wrap">
+                    <label for="news-name" class="sr-only">Full Name</label>
+                    <input type="text" id="news-name" placeholder="Full Name" minlength="2" required>
+                    <span class="err-msg" id="news-name-err"></span>
+                </div>
+
+                <div class="field-wrap">
+                    <label for="news-email" class="sr-only">Email Address</label>
+                    <input type="email" id="news-email" placeholder="Email Address" required>
+                    <span class="err-msg" id="news-email-err"></span>
+                </div>
+
                 <button type="submit">Subscribe</button>
             </form>
+            <p id="newsletter-msg" class="hidden success-msg">
+                ✅ You're subscribed! Thanks for joining us.
+            </p>
         </div>
     </section>
 
+    <!-- Footer -->
     <footer id="contact" class="footer">
         <div class="footer-container">
             <div class="footer-col logo-col">
                 <div class="logo">CleanWave</div>
                 <p>Dedicated to providing the best laundry experience.</p>
             </div>
-            
             <div class="footer-col">
                 <h4>Important Links</h4>
                 <ul>
@@ -160,22 +196,20 @@
                     <li><a href="#">Privacy Policy</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
                 <h4>Contact Us</h4>
                 <ul>
-                    <li><a href="#">Support@cleanwave.com</a></li>
-                    <li><a href="#">+91 12345 67890</a></li>
-                    <li><a href="#about">About Us</a></li>
+                    <li><a href="mailto:support@cleanwave.com">Support@cleanwave.com</a></li>
+                    <li><a href="tel:+911234567890">+91 12345 67890</a></li>
+                    <li><a href="#why-choose-us">About Us</a></li>
                 </ul>
             </div>
-            
             <div class="footer-col social-col">
                 <h4>Follow Us</h4>
                 <div class="social-icons">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
         </div>
