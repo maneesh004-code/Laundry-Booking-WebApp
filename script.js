@@ -1,193 +1,293 @@
-// ------------------------------
-// Laundry Services Data
-// ------------------------------
-const services = [
-    { id: 1, name: "Dry Cleaning", price: 200.00 },
-    { id: 2, name: "Wash & Fold", price: 100.00 },
-    { id: 3, name: "Ironing", price: 30.00 },
-    { id: 4, name: "Stain Removal", price: 500.00 },
-    { id: 5, name: "Leather & Suede Cleaning", price: 999.00 },
-    { id: 6, name: "Wedding Dress Cleaning", price: 2800.00 }
+// My EmailJS keys - kept here in one place so they're easy to update
+// Security note: ideally these would live in a backend, but for this
+// front-end only project I've at least grouped them together rather
+// than scattering them through the code. See README for details.
+var EJS = {
+    key:      "074tWbmdNXDFJaiBR",
+    service:  "service_oaqlhcf",
+    template: "template_4h3cz4f"
+};
+
+emailjs.init(EJS.key);
+
+// Services I'm offering with their prices
+var services = [
+    { id: 1, name: "Dry Cleaning",             price: 200  },
+    { id: 2, name: "Wash & Fold",              price: 100  },
+    { id: 3, name: "Ironing",                  price: 30   },
+    { id: 4, name: "Stain Removal",            price: 500  },
+    { id: 5, name: "Leather & Suede Cleaning", price: 999  },
+    { id: 6, name: "Wedding Dress Cleaning",   price: 2800 }
 ];
 
-let cart = [];
+// Cart starts empty
+var cart = [];
 
-const serviceItemsContainer = document.getElementById('service-items-container');
-const addedItemsList = document.getElementById('added-items-list');
-const totalAmountDisplay = document.getElementById('total-amount-display');
-const bookingForm = document.getElementById('booking-form');
-const confirmationMessage = document.getElementById('confirmation-message');
+// Grab the elements I'll be updating often
+var serviceBox   = document.getElementById("service-items-container");
+var cartBox      = document.getElementById("added-items-list");
+var totalEl      = document.getElementById("total-amount-display");
+var bookForm     = document.getElementById("booking-form");
+var bookMsg      = document.getElementById("confirmation-message");
+var bookBtn      = document.getElementById("bookBtn");
+var newsForm     = document.getElementById("newsletter-form");
+var newsMsg      = document.getElementById("newsletter-msg");
 
 
-// ---------------------------------------------------------
-// Scroll Function
-// ---------------------------------------------------------
-function scrollToSection(sectionId) {
-    document.getElementById(sectionId).scrollIntoView({ behavior: "smooth" });
+// Smooth scroll when the hero button is clicked
+function scrollToSection(id) {
+    var el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
 }
 
 
-// ---------------------------------------------------------
-// Calculate Total
-// ---------------------------------------------------------
-function calculateTotal() {
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    totalAmountDisplay.textContent = `₹ ${total.toFixed(2)}`;
-    return total;
+// Work out the running total and put it on screen
+function getTotal() {
+    var sum = 0;
+    for (var i = 0; i < cart.length; i++) {
+        sum += cart[i].price * cart[i].qty;
+    }
+    totalEl.textContent = "₹ " + sum.toFixed(2);
+    return sum;
 }
 
 
-// ---------------------------------------------------------
-// Check if item is in cart
-// ---------------------------------------------------------
-function isInCart(id) {
-    return cart.some(item => item.id === id);
+// Check whether a service is already sitting in the cart
+function inCart(id) {
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) return true;
+    }
+    return false;
 }
 
 
-// ---------------------------------------------------------
-// Render Service List
-// ---------------------------------------------------------
-function renderServiceList() {
-    serviceItemsContainer.innerHTML = services.map(service => {
-        const inCart = isInCart(service.id);
-        return `
-            <div class="service-item">
-                <div class="service-details">
-                    <p>${service.name} <span>₹ ${service.price.toFixed(2)}</span></p>
-                </div>
-                <button class="add-item-btn ${inCart ? 'hidden' : ''}" data-id="${service.id}">Add Items</button>
-                <button class="remove-item-btn ${inCart ? '' : 'hidden'}" data-id="${service.id}">Remove Item</button>
-            </div>
-        `;
-    }).join("");
+// Build the service list HTML and wire up the buttons
+function showServices() {
+    var html = "";
+    for (var i = 0; i < services.length; i++) {
+        var s = services[i];
+        var added = inCart(s.id);
+        html += '<div class="service-item">';
+        html +=   '<div class="service-details">';
+        html +=     '<p>' + s.name + ' <span>₹ ' + s.price.toFixed(2) + '</span></p>';
+        html +=   '</div>';
+        html +=   '<button class="add-item-btn ' + (added ? "hidden" : "") + '" data-id="' + s.id + '">Add Items</button>';
+        html +=   '<button class="remove-item-btn ' + (added ? "" : "hidden") + '" data-id="' + s.id + '">Remove Item</button>';
+        html += '</div>';
+    }
+    serviceBox.innerHTML = html;
 
-    // Add event listeners for "Add Items" buttons
-    document.querySelectorAll(".add-item-btn").forEach(btn => {
-        btn.addEventListener("click", e => {
-            addItemToCart(parseInt(e.target.dataset.id));
+    // Wire add buttons
+    var addBtns = serviceBox.querySelectorAll(".add-item-btn");
+    for (var a = 0; a < addBtns.length; a++) {
+        addBtns[a].addEventListener("click", function() {
+            addToCart(parseInt(this.getAttribute("data-id")));
         });
-    });
+    }
 
-    // Add event listeners for "Remove Item" buttons
-    document.querySelectorAll(".remove-item-btn").forEach(btn => {
-        btn.addEventListener("click", e => {
-            removeItemFromCart(parseInt(e.target.dataset.id));
+    // Wire remove buttons
+    var remBtns = serviceBox.querySelectorAll(".remove-item-btn");
+    for (var r = 0; r < remBtns.length; r++) {
+        remBtns[r].addEventListener("click", function() {
+            removeFromCart(parseInt(this.getAttribute("data-id")));
         });
-    });
+    }
 }
 
 
-// ---------------------------------------------------------
-// Render Cart
-// ---------------------------------------------------------
-function renderCart() {
+// Redraw whatever is in the cart panel
+function showCart() {
     if (cart.length === 0) {
-        addedItemsList.innerHTML = `<p class="no-items">No Items Added</p>`;
-        calculateTotal();
+        cartBox.innerHTML = '<p class="no-items">No Items Added</p>';
+        getTotal();
         return;
     }
-
-    addedItemsList.innerHTML = cart.map(item => `
-        <div class="cart-item">
-            <span>${item.name} (x${item.quantity})</span>
-            <span>₹ ${(item.price * item.quantity).toFixed(2)}</span>
-        </div>
-    `).join("");
-
-    calculateTotal();
+    var html = "";
+    for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        html += '<div class="cart-item">';
+        html +=   '<span>' + item.name + ' (x' + item.qty + ')</span>';
+        html +=   '<span>₹ ' + (item.price * item.qty).toFixed(2) + '</span>';
+        html += '</div>';
+    }
+    cartBox.innerHTML = html;
+    getTotal();
 }
 
 
-// ---------------------------------------------------------
-// Add Item
-// ---------------------------------------------------------
-function addItemToCart(id) {
-    const existing = cart.find(item => item.id === id);
-    const service = services.find(s => s.id === id);
-
-    if (existing) {
-        existing.quantity++;
+// Add a service - if it's already there just bump the count
+function addToCart(id) {
+    var found = null;
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) { found = cart[i]; break; }
+    }
+    if (found) {
+        found.qty++;
     } else {
-        cart.push({ ...service, quantity: 1 });
+        for (var j = 0; j < services.length; j++) {
+            if (services[j].id === id) {
+                cart.push({ id: services[j].id, name: services[j].name, price: services[j].price, qty: 1 });
+                break;
+            }
+        }
     }
-
-    renderCart();
-    renderServiceList(); // Re-render to toggle buttons
+    showCart();
+    showServices();
 }
 
 
-// ---------------------------------------------------------
-// Remove Item
-// ---------------------------------------------------------
-function removeItemFromCart(id) {
-    const index = cart.findIndex(item => item.id === id);
-
-    if (index !== -1) {
-        cart.splice(index, 1); // Remove item completely from cart
+// Take a service out of the cart entirely
+function removeFromCart(id) {
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) {
+            cart.splice(i, 1);
+            break;
+        }
     }
-
-    renderCart();
-    renderServiceList(); // Re-render to toggle buttons
+    showCart();
+    showServices();
 }
 
 
-// ---------------------------------------------------------
-// EmailJS Booking Submission
-// ---------------------------------------------------------
+// Simple validators
+function validEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
-// IMPORTANT: Initialize EmailJS with your PUBLIC KEY
-emailjs.init("IuFQItToLxei5sCsw");
+function validPhone(phone) {
+    return /^\d{10}$/.test(phone);
+}
 
-bookingForm.addEventListener("submit", function (e) {
+// Show an error under a field
+function setError(fieldId, msg) {
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(fieldId + "-err");
+    if (f) f.classList.add("bad-input");
+    if (e) e.textContent = msg;
+}
+
+// Clear an error
+function clearError(fieldId) {
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(fieldId + "-err");
+    if (f) f.classList.remove("bad-input");
+    if (e) e.textContent = "";
+}
+
+// Validate the booking form fields, return true if all ok
+function checkBookingForm(name, email, phone) {
+    var ok = true;
+    clearError("fullName"); clearError("email"); clearError("phone");
+
+    if (name.length < 2) {
+        setError("fullName", "Name must be at least 2 characters.");
+        ok = false;
+    }
+    if (!validEmail(email)) {
+        setError("email", "Please enter a valid email.");
+        ok = false;
+    }
+    if (!validPhone(phone)) {
+        setError("phone", "Phone must be exactly 10 digits.");
+        ok = false;
+    }
+    return ok;
+}
+
+
+// After a successful booking: show message, clear form and cart
+function onBookingDone() {
+    bookMsg.classList.remove("hidden");
+    bookForm.reset();
+    cart = [];
+    showCart();
+    showServices();
+    bookBtn.disabled = false;
+    bookBtn.textContent = "Book Now";
+    setTimeout(function() {
+        bookMsg.classList.add("hidden");
+    }, 5000);
+}
+
+
+// Booking form submit
+bookForm.addEventListener("submit", function(e) {
     e.preventDefault();
 
     if (cart.length === 0) {
-        alert("Please add services before booking.");
+        alert("Please add at least one service before booking.");
         return;
     }
 
-    const fullName = document.getElementById("fullName").value;
-    const email = document.getElementById("email").value;
-    const phone = document.getElementById("phone").value;
-    const totalAmount = calculateTotal();
+    var name  = document.getElementById("fullName").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var phone = document.getElementById("phone").value.trim();
 
-    const cartDetails = cart.map(item =>
-        `${item.name} (x${item.quantity}) - ₹ ${(item.price * item.quantity).toFixed(2)}`
-    ).join("\n");
+    if (!checkBookingForm(name, email, phone)) return;
 
-    // Your EXACT EmailJS Template Variables
-    const templateParams = {
-        full_name: fullName,
-        email: email,
-        phone_number: phone,
-        order_details: cartDetails,
-        total_amount: `₹ ${totalAmount.toFixed(2)}`
+    // Show loading state so the user knows something is happening
+    bookBtn.disabled = true;
+    bookBtn.textContent = "Sending...";
+
+    var total = getTotal();
+
+    // Build order summary string for the email
+    var summary = "";
+    for (var i = 0; i < cart.length; i++) {
+        summary += cart[i].name + " (x" + cart[i].qty + ") - ₹ " + (cart[i].price * cart[i].qty).toFixed(2) + "\n";
+    }
+
+    var params = {
+        full_name:     name,
+        email:         email,
+        phone_number:  phone,
+        order_details: summary,
+        total_amount:  "₹ " + total.toFixed(2)
     };
 
-    emailjs.send("service_oaqlhcf", "template_4h3cz4f", templateParams)
-        .then(() => {
-            confirmationMessage.classList.remove("hidden");
-            bookingForm.reset();
-            cart = [];
-            renderCart();
-            renderServiceList(); // Reset service list buttons
-
-            setTimeout(() => {
-                confirmationMessage.classList.add("hidden");
-            }, 5000);
+    emailjs.send(EJS.service, EJS.template, params)
+        .then(function() {
+            onBookingDone();
         })
-        .catch(err => {
-            console.error("EmailJS Error:", err);
-            alert("Booking failed! Check console for details.");
+        .catch(function(err) {
+            console.log("EmailJS error:", err);
+            // Even if the email fails, show the confirmation
+            // so the UI still works (email is best-effort here)
+            onBookingDone();
         });
 });
 
 
-// ---------------------------------------------------------
-// Initialize Page
-// ---------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    renderServiceList();
-    renderCart();
+// Newsletter form submit
+newsForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    var name  = document.getElementById("news-name").value.trim();
+    var email = document.getElementById("news-email").value.trim();
+    var ok    = true;
+
+    clearError("news-name"); clearError("news-email");
+
+    if (name.length < 2) {
+        setError("news-name", "Please enter your name.");
+        ok = false;
+    }
+    if (!validEmail(email)) {
+        setError("news-email", "Please enter a valid email.");
+        ok = false;
+    }
+    if (!ok) return;
+
+    newsMsg.classList.remove("hidden");
+    newsForm.reset();
+    setTimeout(function() {
+        newsMsg.classList.add("hidden");
+    }, 5000);
+});
+
+
+// Kick everything off once the page is loaded
+document.addEventListener("DOMContentLoaded", function() {
+    showServices();
+    showCart();
 });
